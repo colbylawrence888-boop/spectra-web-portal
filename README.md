@@ -1,7 +1,7 @@
 # SPECTRA Browser
 
-SPECTRA is a browser-only web interface with tabs, address/search input, back/forward, reload, home, and direct opening.
+Browser-only workspace with tabs, address bar, and internal DuckDuckGo Instant Answer + Wikipedia reference search.
 
-Hosted through GitHub Pages. No games, notes, bookmarks, or other dashboard features.
+All search interactions remain inside SPECTRA. Supported public pages can be read in a text-only reader; other websites may display in an iframe only when they permit embedding. The app does not open external browser windows or bypass browser, website, or school network restrictions.
 
-**Limits:** GitHub Pages is static hosting. SPECTRA can display sites that allow embedding inside an iframe, but many websites (including popular search engines) prevent this with CSP or X-Frame-Options. Search queries and blocked embeds can be opened directly in the device's actual browser. This is not a network-filter bypass, a general web proxy, or a substitute for the browser's own networking permissions.
+The search and reader service is hosted separately: https://spectra-reader-lrdsot.v2.appdeploy.ai/ . GitHub Pages serves the static browser UI.

@@ -67,6 +67,25 @@ kbd{border:1px solid #41415b;border-radius:6px;padding:4px 6px;color:#b3aecd;bac
 @media(max-width:740px){.brand{font-size:0;padding-right:1px}.tab{min-width:105px;flex-basis:145px}.toolbar{gap:1px;padding:6px}.tool{width:30px}.open{padding:10px 8px;font-size:0}.open:after{content:'↗';font-size:18px}.form{padding-left:8px;gap:4px}.form>span{display:none}.go{padding:7px 9px}}
 @media(max-width:450px){.top{padding-left:6px;padding-right:6px}.tab{min-width:90px;flex-basis:115px}.toolbar{height:57px}.tool{width:26px;height:33px;font-size:17px}.form input{font-size:11px}.bigbrand .mark{width:45px;height:45px;border-radius:13px}.bigbrand strong{font-size:25px}.searchform input{font-size:12px}.searchform button{padding:10px}.homeinner{padding:20px 16px 45px}}
 @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+/* In-app search and reader */
+.results{flex:1;min-height:0;overflow-y:auto;background:#101322;color:#e9eaff;padding:42px max(24px,calc((100% - 790px)/2));}
+.results[hidden]{display:none!important}
+.results-eyebrow{display:block;font-size:10px;letter-spacing:2px;font-weight:900;color:#ba9fff;margin-bottom:15px;text-transform:uppercase}
+.results-heading{font-size:clamp(31px,4.5vw,51px);line-height:1.18;letter-spacing:-1.9px;margin:0 0 13px;overflow-wrap:anywhere}
+.results-intro{font-size:13px;color:#9da8c3;line-height:1.8;margin:0 0 28px}
+.results-status{background:#1a2035;border:1px solid #333a56;border-radius:12px;padding:20px;color:#acb6d0;line-height:1.7}
+.result-error{color:#ffadb2;background:#3a2339;border-color:#673d52}
+.search-result-list{display:grid;gap:12px}
+.search-result{text-align:left;display:flex;flex-direction:column;gap:8px;width:100%;background:#1b1f35;border:1px solid #353a56;color:#ecedff;padding:21px 22px;border-radius:14px;transition:background .15s,border-color .15s}
+.search-result:hover{background:#282745;border-color:#aa91ff}
+.result-source{font-size:10px;color:#bfa6ff;font-weight:900;letter-spacing:1.4px;text-transform:uppercase}
+.result-title{font-size:18px;letter-spacing:-.25px;line-height:1.4}
+.result-desc{font-size:13px;color:#aab1c9;line-height:1.75}
+.result-url{font-size:11px;color:#6fe3c1;overflow-wrap:anywhere;line-height:1.6}
+.result-footnote{font-size:11px;color:#919aaf;margin:22px 0 0}
+.article-body{font-size:14px;line-height:1.9;white-space:pre-wrap;overflow-wrap:anywhere;color:#d5d9ed;margin-top:22px}
+@media(max-width:540px){.results{padding:25px 17px}.search-result{padding:17px}.result-title{font-size:16px}.results-heading{font-size:30px}}
 </style>
 </head>
 <body>
@@ -82,7 +101,6 @@ kbd{border:1px solid #41415b;border-radius:6px;padding:4px 6px;color:#b3aecd;bac
   <button type="button" class="tool" id="reload" title="Refresh" aria-label="Refresh">↻</button>
   <button type="button" class="tool" id="home" title="Home" aria-label="Home">⌂</button>
   <form id="navform" class="form" autocomplete="off"><span>●</span><input id="address" aria-label="Website address or search" placeholder="Search or enter website address" spellcheck="false" autocapitalize="off"><button type="submit" class="go">GO ↗</button></form>
-  <button type="button" id="direct" class="open" title="Open page directly in a new browser tab">OPEN DIRECTLY ↗</button>
 </nav>
 <main class="stage" id="stage" aria-label="Browser content"></main>
 </div>
@@ -104,28 +122,47 @@ function parse(value){
     try{const url=new URL(/^https?:\/\//i.test(text)?text:'https://'+text);if(['https:','http:'].includes(url.protocol)&&!url.username&&!url.password)return url.href}catch{}
     return null;
   }
-  return {search:'https://www.google.com/search?q='+encodeURIComponent(text)};
+  return {search:text};
 }
-function titleFor(url){if(!url)return 'New Tab';try{return new URL(url).hostname.replace(/^www\./,'')}catch{return 'Website'}}
-function external(url){if(!url)return;const link=document.createElement('a');link.href=url;link.target='_blank';link.rel='noopener noreferrer';document.body.appendChild(link);link.click();link.remove()}
+function titleFor(url){
+  if(!url)return 'New Tab';
+  if(url.startsWith('spectra-search:'))return 'Search · '+decodeURIComponent(url.slice(15)).slice(0,30);
+  try{return new URL(url).hostname.replace(/^www\./,'')}catch{return 'Website'}
+}
 function makeStart(tab){
   const screen=document.createElement('div');screen.className='start';
-  screen.innerHTML='<div class="homeinner"><div class="bigbrand"><span class="mark">S</span><strong>SPECTRA</strong></div><p class="tagline">A SPACE TO EXPLORE</p><form class="searchform"><input type="text" aria-label="Web search or URL" placeholder="Search or enter website address" autocomplete="off"><button type="submit">Search ↗</button></form><p class="caption">Websites that allow embedding can appear inside SPECTRA.<br>Other sites open directly in your normal browser.</p><div class="help"><span><kbd>Ctrl/⌘ + L</kbd> Address</span><span><kbd>Ctrl/⌘ + T</kbd> New tab</span></div></div>';
+  screen.innerHTML='<div class="homeinner"><div class="bigbrand"><span class="mark">S</span><strong>SPECTRA</strong></div><p class="tagline">A SPACE TO EXPLORE</p><form class="searchform"><input type="text" aria-label="Web search or URL" placeholder="Search or enter website address" autocomplete="off"><button type="submit">Search ↗</button></form><p class="caption">Search results and supported pages stay inside SPECTRA.<br>Some sites do not allow embedded viewing.</p><div class="help"><span><kbd>Ctrl/⌘ + L</kbd> Address</span><span><kbd>Ctrl/⌘ + T</kbd> New tab</span></div></div>';
   screen.querySelector('form').addEventListener('submit',e=>{e.preventDefault();navigate(tab,screen.querySelector('input').value)});
   tab.start=screen;stage.appendChild(screen);
 }
 function makePanel(tab){
-  const panel=document.createElement('div');panel.className='pane';
-  const info=document.createElement('div');info.className='notice';
-  const label=document.createElement('span');label.innerHTML='<b>Preview mode.</b> If a site refuses to display here, use Open directly. This page cannot override that website’s browser restrictions.';
-  const launch=document.createElement('button');launch.type='button';launch.textContent='Open directly ↗';launch.addEventListener('click',()=>external(tab.url));
-  info.append(label,launch);
-  const frame=document.createElement('iframe');frame.title='Website preview';frame.referrerPolicy='no-referrer';
-  panel.append(info,frame);tab.panel=panel;tab.frame=frame;stage.appendChild(panel);
+  const panel=document.createElement('div');
+  panel.className='pane';
+  const info=document.createElement('div');
+  info.className='notice';
+  const label=document.createElement('span');
+  label.innerHTML='<b>In-app preview.</b> Some sites refuse embedding. Reader mode supports approved public articles only.';
+  const readerButton=document.createElement('button');
+  readerButton.type='button';
+  readerButton.textContent='Reader mode ↗';
+  readerButton.addEventListener('click',()=>loadReader(tab));
+  info.append(label,readerButton);
+  const results=document.createElement('div');
+  results.className='results';
+  results.hidden=true;
+  const frame=document.createElement('iframe');
+  frame.title='Embedded website preview';
+  frame.referrerPolicy='no-referrer';
+  frame.setAttribute('sandbox','allow-scripts allow-forms allow-same-origin');
+  panel.append(info,results,frame);
+  tab.panel=panel;tab.info=info;tab.results=results;tab.frame=frame;
+  stage.appendChild(panel);
 }
 function sync(){
   const t=active();if(!t)return;
-  address.value=t.url;$('back').disabled=t.index===0;$('forward').disabled=t.index===t.history.length-1;$('direct').disabled=!t.url;
+  address.value=t.url.startsWith('spectra-search:')?decodeURIComponent(t.url.slice(15)):t.url;
+  $('back').disabled=t.index===0;
+  $('forward').disabled=t.index===t.history.length-1;
   document.title=(t.name||'New Tab')+' — SPECTRA Browser';
 }
 function drawTabs(){
@@ -154,26 +191,135 @@ function removeTab(id){
   all[idx].start.remove();all[idx].panel.remove();all.splice(idx,1);
   if(!all.length)createTab();else if(selected===id)activate(all[Math.max(0,idx-1)].id);else drawTabs();
 }
+const APP_API='https://spectra-reader-lrdsot.v2.appdeploy.ai';
+
+function addText(parent,tag,text,className){
+  const node=document.createElement(tag);
+  if(className)node.className=className;
+  node.textContent=text;
+  parent.appendChild(node);
+  return node;
+}
+
+function setResultView(t){
+  t.info.hidden=true;
+  t.frame.hidden=true;
+  t.frame.style.display='none';
+  t.results.hidden=false;
+  t.results.style.display='block';
+  t.results.replaceChildren();
+}
+
+async function loadSearch(t,term){
+  if(!term)return;
+  const expected='spectra-search:'+encodeURIComponent(term);
+  setResultView(t);
+  const header=addText(t.results,'div','Search','results-eyebrow');
+  const heading=addText(t.results,'h1',term,'results-heading');
+  addText(t.results,'p','DuckDuckGo instant answers and Wikipedia reference results, displayed within SPECTRA.','results-intro');
+  const status=addText(t.results,'div','Searching for answers…','results-status');
+  try{
+    const response=await fetch(APP_API+'/api/search?q='+encodeURIComponent(term));
+    const data=await response.json();
+    if(!response.ok)throw new Error(data.error||'Search service unavailable.');
+    if(t.url!==expected)return;
+    status.remove();
+    const results=Array.isArray(data.results)?data.results:[];
+    if(!results.length){
+      addText(t.results,'p','No instant answers or reference pages were found. Try a more specific search.','results-status');
+      return;
+    }
+    const list=document.createElement('div');
+    list.className='search-result-list';
+    for(const result of results){
+      if(!result.url||!result.title)continue;
+      const card=document.createElement('button');
+      card.type='button';
+      card.className='search-result';
+      addText(card,'span',result.source||'Reference','result-source');
+      addText(card,'strong',result.title,'result-title');
+      if(result.snippet)addText(card,'span',result.snippet,'result-desc');
+      addText(card,'span',result.url,'result-url');
+      card.addEventListener('click',()=>navigate(t,result.url));
+      list.appendChild(card);
+    }
+    t.results.appendChild(list);
+    if(Array.isArray(data.warnings)&&data.warnings.length){
+      addText(t.results,'p',data.warnings.join(' · '),'result-footnote');
+    }
+  }catch(error){
+    if(t.url!==expected)return;
+    status.textContent='Search is temporarily unavailable in SPECTRA. The search service may be blocked by this network.';
+    status.classList.add('result-error');
+  }
+}
+
+async function loadReader(t){
+  if(!t||!/^https?:\/\//i.test(t.url))return;
+  const expected=t.url;
+  t.mode='reader';
+  setResultView(t);
+  addText(t.results,'span','SPECTRA READER','results-eyebrow');
+  const status=addText(t.results,'p','Loading public article…','results-status');
+  try{
+    const response=await fetch(APP_API+'/api/read?url='+encodeURIComponent(t.url));
+    const data=await response.json();
+    if(!response.ok)throw new Error(data.error||'Page cannot be read.');
+    if(t.url!==expected)return;
+    status.remove();
+    addText(t.results,'h1',data.title||'Public article','results-heading');
+    addText(t.results,'p',data.url||expected,'result-url');
+    addText(t.results,'div',data.text||'No readable content.','article-body');
+  }catch(error){
+    if(t.url!==expected)return;
+    status.textContent=(error instanceof Error?error.message:'Reader unavailable')+
+      ' This website may not support read-only viewing.';
+    status.classList.add('result-error');
+  }
+}
+
 function display(t,url){
-  t.url=url;t.name=titleFor(url);
-  if(url)t.frame.src=url;
-  else t.frame.removeAttribute('src');
+  t.url=url;
+  t.name=titleFor(url);
+  t.mode='preview';
+  if(url.startsWith('spectra-search:')){
+    t.frame.removeAttribute('src');
+    loadSearch(t,decodeURIComponent(url.slice(15)));
+  }else if(url){
+    t.info.hidden=false;
+    t.results.hidden=true;
+    t.results.style.display='none';
+    t.frame.hidden=false;
+    t.frame.style.display='block';
+    t.frame.src=url;
+  }else{
+    t.frame.removeAttribute('src');
+    t.results.hidden=true;
+  }
   if(selected===t.id)activate(t.id);else drawTabs();
 }
+
 function navigate(t,raw){
   if(!t)return;
   const to=parse(raw);
   if(to===null){showMessage('Enter a valid website address.');return}
-  if(typeof to==='object'){external(to.search);return}
-  t.history=t.history.slice(0,t.index+1);t.history.push(to);t.index=t.history.length-1;display(t,to);
+  const destination=typeof to==='object'?'spectra-search:'+encodeURIComponent(to.search):to;
+  t.history=t.history.slice(0,t.index+1);
+  t.history.push(destination);
+  t.index=t.history.length-1;
+  display(t,destination);
 }
 function historyMove(by){const t=active();if(!t)return;const next=t.index+by;if(next<0||next>=t.history.length)return;t.index=next;display(t,t.history[next])}
 $('newTab').addEventListener('click',()=>{createTab();address.focus()});
 $('back').addEventListener('click',()=>historyMove(-1));
 $('forward').addEventListener('click',()=>historyMove(1));
-$('reload').addEventListener('click',()=>{const t=active();if(t&&t.url)t.frame.src=t.url});
+$('reload').addEventListener('click',()=>{
+  const t=active();if(!t||!t.url)return;
+  if(t.url.startsWith('spectra-search:'))loadSearch(t,decodeURIComponent(t.url.slice(15)));
+  else if(t.mode==='reader')loadReader(t);
+  else t.frame.src=t.url;
+});
 $('home').addEventListener('click',()=>navigate(active(),''));
-$('direct').addEventListener('click',()=>{const t=active();if(t)external(t.url)});
 $('navform').addEventListener('submit',e=>{e.preventDefault();navigate(active(),address.value)});
 window.addEventListener('keydown',e=>{
  const mod=e.ctrlKey||e.metaKey;
