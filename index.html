@@ -286,12 +286,21 @@ function display(t,url){
     t.frame.removeAttribute('src');
     loadSearch(t,decodeURIComponent(url.slice(15)));
   }else if(url){
-    t.info.hidden=false;
-    t.results.hidden=true;
-    t.results.style.display='none';
-    t.frame.hidden=false;
-    t.frame.style.display='block';
-    t.frame.src=url;
+    let articleHost='';
+    try{articleHost=new URL(url).hostname.toLowerCase()}catch{}
+    const readable=['example.com','wikipedia.org','wiktionary.org','nasa.gov','si.edu','britannica.com','openstax.org']
+      .some(host=>articleHost===host||articleHost.endsWith('.'+host));
+    if(readable){
+      t.frame.removeAttribute('src');
+      loadReader(t);
+    }else{
+      t.info.hidden=false;
+      t.results.hidden=true;
+      t.results.style.display='none';
+      t.frame.hidden=false;
+      t.frame.style.display='block';
+      t.frame.src=url;
+    }
   }else{
     t.frame.removeAttribute('src');
     t.results.hidden=true;
