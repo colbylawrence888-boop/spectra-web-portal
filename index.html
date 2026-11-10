@@ -1,151 +1,190 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#090b17">
-  <meta name="description" content="SPECTRA is your personal research, browsing, games and productivity dashboard.">
-  <title>SPECTRA — Your digital space</title>
-  <link rel="stylesheet" href="./styles.css">
-  <script src="./app.js" defer></script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0b0d18">
+<title>SPECTRA Browser</title>
+<style>
+:root{color-scheme:dark;--bg:#0b0d18;--bar:#171a2a;--border:#30354c;--text:#f1f1ff;--muted:#929ab8;--accent:#a88cff;font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;overflow:hidden}
+body{background:var(--bg);color:var(--text);font-size:13px}
+button,input{font:inherit}
+button{cursor:pointer}
+button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.app{height:100dvh;display:flex;flex-direction:column}
+.top{height:49px;flex:none;display:flex;gap:7px;align-items:end;background:#0b0d18;padding:6px 13px 0}
+.brand{display:flex;align-items:center;gap:9px;padding:0 14px 10px 2px;font-weight:900;font-size:14px;letter-spacing:1.3px;white-space:nowrap}
+.mark{width:25px;height:25px;background:linear-gradient(145deg,#b6a3ff,#6558ec);border-radius:8px;display:grid;place-items:center;font-weight:900;color:white;box-shadow:0 0 21px #8953e344}
+.tabs{display:flex;flex:1;min-width:0;overflow:auto;scrollbar-width:none;gap:4px}
+.tabs::-webkit-scrollbar{display:none}
+.tab{display:flex;align-items:center;gap:8px;flex:0 1 180px;min-width:112px;max-width:190px;padding:0 8px;color:#969ab6;min-height:38px;border:1px solid transparent;border-bottom:0;border-radius:12px 12px 0 0;background:transparent;text-align:left}
+.tab.active{background:var(--bar);color:white;border-color:var(--border)}
+.tab:hover{background:#1f2236}
+.tab .symbol{color:var(--accent);font-size:18px}
+.tab .title{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;font-size:11px;font-weight:700}
+.tab .close{border:0;background:none;color:#b3b1c6;border-radius:6px;padding:1px 6px;font-size:18px}
+.tab .close:hover{background:#3f3b59}
+.new{align-self:center;margin-bottom:5px;width:33px;height:33px;border:0;border-radius:9px;background:transparent;color:#c0bed6;font-size:23px}
+.new:hover{background:#252940}
+.toolbar{display:flex;gap:5px;align-items:center;height:63px;flex:none;padding:9px 12px;background:var(--bar);border-bottom:1px solid var(--border)}
+.tool{display:grid;place-items:center;background:none;border:0;border-radius:9px;flex:none;color:#bec2d8;width:36px;height:36px;font-size:20px}
+.tool:hover:not(:disabled){background:#292c42;color:white}
+.tool:disabled{opacity:.3;cursor:default}
+.form{height:42px;display:flex;align-items:center;gap:9px;flex:1;min-width:0;border:1px solid #373f59;border-radius:11px;background:#0c1020;padding:4px 6px 4px 14px}
+.form:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px #8568ed26}
+.form>span{color:#79d7b2;font-size:11px}
+.form input{border:0;outline:0;background:transparent;flex:1;min-width:0;color:white;font-size:12px}
+.form input::placeholder{color:#8189a3}
+.go{border:0;background:#383257;color:#e9dfff;border-radius:7px;padding:7px 13px;font-size:11px;font-weight:900}
+.go:hover{background:#4c407b}
+.open{border:1px solid #484565;border-radius:10px;background:#28263e;color:#e4dcfc;padding:11px 13px;flex:none;font-weight:800;font-size:11px}
+.open:hover:not(:disabled){background:#39314c}
+.open:disabled{opacity:.4}
+.stage{flex:1;min-height:0;position:relative}
+.pane,.start{position:absolute;inset:0;display:none}
+.pane.active{display:flex;flex-direction:column}
+.pane iframe{width:100%;height:100%;border:0;flex:1;background:#fff}
+.notice{display:flex;align-items:center;gap:13px;justify-content:space-between;background:#1d2034;border-bottom:1px solid #323650;padding:9px 15px;font-size:11px;color:#aeb7d1}
+.notice span{flex:1;line-height:1.5}
+.notice b{color:#eee7ff}
+.notice button{border:1px solid #625589;background:#403458;color:#f2e9ff;border-radius:7px;padding:7px 11px;font-weight:800;flex:none;font-size:10px}
+.start.active{display:grid;place-items:center;overflow:auto;background:radial-gradient(ellipse 650px 430px at 50% 43%,#3424504d,transparent 80%),radial-gradient(ellipse 520px 350px at 80% 10%,#1f3c5e33,transparent 83%),#0b0d18}
+.homeinner{width:min(690px,100%);padding:28px 24px 80px;text-align:center}
+.bigbrand{display:flex;align-items:center;justify-content:center;gap:15px;margin-bottom:20px}
+.bigbrand .mark{width:60px;height:60px;border-radius:18px;font-size:34px}
+.bigbrand strong{font-size:clamp(25px,5vw,40px);letter-spacing:3px}
+.tagline{color:#959ab7;font-size:10px;font-weight:900;letter-spacing:4px;margin:0 0 36px}
+.searchform{background:#1b1f33;border:1px solid #41445f;border-radius:17px;display:flex;align-items:center;gap:9px;padding:10px;box-shadow:0 17px 50px #0004}
+.searchform:focus-within{border-color:var(--accent)}
+.searchform input{flex:1;min-width:0;background:none;border:0;outline:0;color:white;font-size:15px;padding:6px 12px}
+.searchform button{border:0;border-radius:10px;background:linear-gradient(125deg,#bdaaff,#817cff);color:#111024;padding:12px 18px;font-weight:900}
+.caption{color:#929ab5;font-size:12px;margin-top:25px;line-height:1.8}
+.help{display:flex;justify-content:center;flex-wrap:wrap;gap:15px;color:#8288a6;font-size:11px;margin-top:37px}
+kbd{border:1px solid #41415b;border-radius:6px;padding:4px 6px;color:#b3aecd;background:#1e2132}
+#message{position:fixed;z-index:4;bottom:15px;right:15px;background:#27263d;padding:13px 17px;border:1px solid #585074;border-radius:10px;color:white;display:none}
+@media(max-width:740px){.brand{font-size:0;padding-right:1px}.tab{min-width:105px;flex-basis:145px}.toolbar{gap:1px;padding:6px}.tool{width:30px}.open{padding:10px 8px;font-size:0}.open:after{content:'↗';font-size:18px}.form{padding-left:8px;gap:4px}.form>span{display:none}.go{padding:7px 9px}}
+@media(max-width:450px){.top{padding-left:6px;padding-right:6px}.tab{min-width:90px;flex-basis:115px}.toolbar{height:57px}.tool{width:26px;height:33px;font-size:17px}.form input{font-size:11px}.bigbrand .mark{width:45px;height:45px;border-radius:13px}.bigbrand strong{font-size:25px}.searchform input{font-size:12px}.searchform button{padding:10px}.homeinner{padding:20px 16px 45px}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
 </head>
 <body>
-  <div class="ambient ambient-one"></div>
-  <div class="ambient ambient-two"></div>
-  <div class="app-shell">
-    <aside class="sidebar" aria-label="Main navigation">
-      <a class="brand" href="#home" aria-label="SPECTRA Home">
-        <span class="brand-mark"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M24 3 44 14v20L24 45 4 34V14Z" fill="none" stroke="currentColor" stroke-width="3.5"/><path d="m24 11 14 23H10Z" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linejoin="round"/><circle cx="24" cy="27" r="4" fill="currentColor"/></svg></span>
-        <span class="brand-words"><strong>SPECTRA</strong><small>YOUR DIGITAL SPACE</small></span>
-      </a>
-      <div class="sidebar-subtitle">WORKSPACE</div>
-      <nav class="nav" aria-label="Sections">
-        <button class="nav-item active" data-view="home" type="button"><span class="nav-icon">⌂</span><span>Home</span></button>
-        <button class="nav-item" data-view="browse" type="button"><span class="nav-icon">◎</span><span>Browse</span></button>
-        <button class="nav-item" data-view="games" type="button"><span class="nav-icon">✧</span><span>Games</span></button>
-        <button class="nav-item" data-view="library" type="button"><span class="nav-icon">▤</span><span>Library</span></button>
-        <button class="nav-item" data-view="tools" type="button"><span class="nav-icon">◷</span><span>Tools</span></button>
-      </nav>
-      <div class="sidebar-subtitle sidebar-subtitle-lower">PREFERENCES</div>
-      <nav class="nav" aria-label="Preferences">
-        <button class="nav-item" data-view="settings" type="button"><span class="nav-icon">⚙</span><span>Settings</span></button>
-      </nav>
-      <div class="sidebar-foot">
-        <div class="pulse-line"><span class="pulse-dot"></span> SYSTEM ONLINE</div>
-        <small>Built for normal, standards-based browsers.</small>
-        <span class="release">SPECTRA <b>01.0</b></span>
-      </div>
-    </aside>
-
-    <div class="main-frame">
-      <header class="topbar">
-        <div class="breadcrumbs"><span>WORKSPACE</span><span class="slash">/</span><b id="crumb">Overview</b></div>
-        <form class="top-search" id="globalSearch" role="search">
-          <span class="search-symbol">⌕</span>
-          <input type="search" id="globalQuery" aria-label="Search the web" autocomplete="off" placeholder="Search the web or enter a URL">
-          <kbd>↵</kbd>
-        </form>
-        <div class="header-actions">
-          <span class="status-label"><span class="online-dot"></span> ONLINE</span>
-          <button class="round-button" id="themeQuick" type="button" aria-label="Toggle light and dark themes">☼</button>
-          <span class="avatar" aria-hidden="true">S</span>
-        </div>
-      </header>
-
-      <main id="content">
-        <section class="view active" data-page="home" aria-labelledby="homeTitle">
-          <div class="eyebrow"><span class="eyebrow-line"></span> INTRODUCING YOUR NEW SPACE <span class="small-sep">•</span> V1.0</div>
-          <div class="hero">
-            <div class="hero-copy">
-              <div class="hero-label"><span class="sparkle">✦</span> DESIGNED FOR THE WAY YOU EXPLORE</div>
-              <h1 id="homeTitle">Make space for<br><em>everything.</em></h1>
-              <p>Your personal launchpad for discovering, studying, creating and taking a break. All the essentials, one beautiful place.</p>
-              <div class="hero-actions">
-                <button class="btn btn-primary" type="button" data-view="browse">Start exploring <span>↗</span></button>
-                <button class="btn btn-secondary" type="button" data-view="games">Explore games <span>→</span></button>
-              </div>
-              <div class="hero-signals"><span><i></i> YOUR SPACE</span><span><i></i> PRIVACY FIRST</span><span><i></i> NO ACCOUNT</span></div>
-            </div>
-            <div class="hero-visual" aria-hidden="true">
-              <div class="orbit orbit-outer"></div><div class="orbit orbit-middle"></div><div class="orbit orbit-inner"></div>
-              <div class="visual-ring"></div>
-              <div class="floating-card top-card"><span>EXPLORE</span><b>Limitless ideas.</b><small>DISCOVER THE WEB →</small></div>
-              <div class="floating-card bottom-card"><span>FOCUS</span><b>Find your flow.</b><small>STAY IN THE ZONE ●</small></div>
-              <div class="hero-glyph"><svg viewBox="0 0 120 120"><path d="M60 5 112 33v54l-52 28L8 87V33Z" fill="none" stroke="currentColor" stroke-width="3"/><path d="M60 25 96 89H24Z" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/><circle cx="60" cy="70" r="11" fill="currentColor"/></svg></div>
-              <div class="orbit-label">S / 01</div>
-            </div>
-          </div>
-
-          <div class="section-heading"><div><div class="eyebrow muted">YOUR SHORTCUTS</div><h2>Jump right in<span class="period">.</span></h2></div><button class="subtle-link" data-view="library" type="button">Manage favorites <span>↗</span></button></div>
-          <div class="shortcut-grid">
-            <button type="button" class="shortcut-card violet" data-view="browse"><div class="shortcut-symbol">⌁</div><span class="shortcut-overline">DISCOVER</span><strong>Browse smarter</strong><p>Search the web and read public articles.</p><span class="card-arrow">↗</span></button>
-            <button type="button" class="shortcut-card blue" data-view="games"><div class="shortcut-symbol">✧</div><span class="shortcut-overline">UNWIND</span><strong>Take a break</strong><p>Original mini games that work on this site.</p><span class="card-arrow">↗</span></button>
-            <button type="button" class="shortcut-card amber" data-view="tools"><div class="shortcut-symbol">◷</div><span class="shortcut-overline">PRODUCTIVITY</span><strong>Get in the zone</strong><p>Focus timer and notes, saved in your browser.</p><span class="card-arrow">↗</span></button>
-          </div>
-
-          <div class="two-col-panels">
-            <div class="panel"><div class="panel-label">QUICK ACCESS</div><div class="panel-head"><h3>Explore somewhere new</h3><span class="subtle-icon">↗</span></div><div id="homeLinks" class="quicklinks"></div></div>
-            <div class="panel panel-gradient"><div class="panel-label">YOUR OWN WORKSPACE</div><div class="panel-head"><h3>Pick up where you left off</h3><span class="subtle-icon">↗</span></div><p id="lastActivity">Your recent reading history will appear here. Start by exploring a public article.</p><button class="text-button" data-view="browse" type="button">OPEN READER <span>↗</span></button></div>
-          </div>
-        </section>
-
-        <section class="view" data-page="browse" aria-labelledby="browseTitle">
-          <div class="page-top"><div class="eyebrow muted">THE OPEN WEB · YOUR WAY</div><h1 class="page-title" id="browseTitle">Explore the <em>web.</em></h1><p>Search in a regular browser tab, or use our clean reader for supported public websites.</p></div>
-          <div class="browser-window">
-            <div class="browser-chrome"><div class="chrome-dots"><i></i><i></i><i></i></div><span> SPECTRA / PUBLIC READER</span><span class="secure-tag">READ ONLY</span></div>
-            <form id="browserForm" class="browser-form"><span>⌕</span><input id="browserAddress" type="url" placeholder="https://example.com" aria-label="Public article address" value="https://example.com"><button type="submit" class="btn btn-primary">Read page ↗</button></form>
-            <div class="browser-actions"><button type="button" id="openOriginal">Open original website ↗</button><button type="button" id="saveCurrent">☆ Save bookmark</button><span>For supported public HTTPS sources only</span></div>
-            <article class="reader-content" id="readerContent" aria-live="polite">
-              <div class="reader-empty"><div class="reader-planet">✳</div><h3>A clearer way to read.</h3><p>Paste a supported public article URL above to see a simple, distraction-free reading view.</p></div>
-            </article>
-          </div>
-          <div class="section-heading compact"><div><div class="eyebrow muted">USEFUL SOURCES</div><h2>Start somewhere good<span class="period">.</span></h2></div></div>
-          <div class="source-grid" id="sources"></div>
-          <div class="notice"><b>How this works</b><p>SPECTRA is not an unrestricted proxy. Its reader requests approved public pages without showing scripts, accounts, or sign-in screens. Sites may still be unavailable on your network.</p></div>
-          <div class="panel history-panel"><div class="panel-head"><h3>Recent reading</h3><button type="button" class="text-button" id="clearHistory">CLEAR HISTORY</button></div><div id="historyList" class="history-list"></div></div>
-        </section>
-
-        <section class="view" data-page="games" aria-labelledby="gamesTitle">
-          <div class="page-top"><div class="eyebrow muted">YOUR ARCADE</div><h1 class="page-title" id="gamesTitle">Play a little<span class="period">.</span></h1><p>Three original games, built into SPECTRA. No external game servers or broken embeds.</p></div>
-          <div class="game-select">
-            <button type="button" class="game-pick selected" data-game="snake"><span class="pick-art snake-art"><i></i><i></i><i></i></span><span>NEON SNAKE<small>ARCADE / SKILL</small></span><b>↗</b></button>
-            <button type="button" class="game-pick" data-game="memory"><span class="pick-art memory-art"><i>✦</i></span><span>MEMORY GRID<small>PUZZLE / FOCUS</small></span><b>↗</b></button>
-            <button type="button" class="game-pick" data-game="duel"><span class="pick-art duel-art"><i>×</i><i>○</i></span><span>GRID DUEL<small>CLASSIC / STRATEGY</small></span><b>↗</b></button>
-          </div>
-          <div class="game-stage">
-            <div class="stage-top"><div><div class="eyebrow muted" id="gameType">ARCADE / SKILL</div><h2 id="gameName">Neon Snake</h2></div><div class="score-chip" id="gameScore">BEST 0</div></div>
-            <div id="snakeArea" class="game-area"><canvas id="snakeCanvas" width="400" height="400" aria-label="Snake game grid"></canvas><div class="game-controls"><button type="button" id="snakeStart" class="btn btn-primary">Start / Restart</button><button type="button" id="snakePause" class="btn btn-secondary">Pause</button><span id="snakeMessage">Use arrow keys or WASD to move.</span></div><div class="dpad" aria-label="Touch game controls"><span></span><button data-dir="up" aria-label="Move up">↑</button><span></span><button data-dir="left" aria-label="Move left">←</button><button data-dir="down" aria-label="Move down">↓</button><button data-dir="right" aria-label="Move right">→</button></div></div>
-            <div id="memoryArea" class="game-area hidden"><div class="game-stats" id="memoryStats">Moves: 0 · Matched: 0 / 8</div><div class="memory-board" id="memoryBoard"></div><button class="btn btn-secondary" id="memoryReset" type="button">Shuffle & restart ↺</button><p class="game-tip" id="memoryMessage">Find all the matching pairs.</p></div>
-            <div id="duelArea" class="game-area hidden"><div class="game-stats" id="duelMessage">Your turn — you are X.</div><div class="duel-board" id="duelBoard"></div><button class="btn btn-secondary" id="duelReset" type="button">New round ↺</button></div>
-          </div>
-        </section>
-
-        <section class="view" data-page="library" aria-labelledby="libraryTitle">
-          <div class="page-top"><div class="eyebrow muted">SAVED FOR LATER</div><h1 class="page-title" id="libraryTitle">Your <em>library.</em></h1><p>Your collection stays on this device. No account required.</p></div>
-          <div class="library-toolbar"><input type="search" id="bookmarkSearch" placeholder="Search your bookmarks" aria-label="Search bookmarks"><button type="button" class="btn btn-primary" id="addBookmark">+ Add bookmark</button></div>
-          <div id="bookmarkList" class="bookmark-grid"></div>
-          <div class="notice"><b>Local by design.</b><p>Bookmarks and notes are saved in this browser's local storage. Clearing site data will delete them.</p></div>
-        </section>
-
-        <section class="view" data-page="tools" aria-labelledby="toolsTitle">
-          <div class="page-top"><div class="eyebrow muted">GET THINGS DONE</div><h1 class="page-title" id="toolsTitle">Find your <em>flow.</em></h1><p>Two simple tools for staying on track, without an account or distractions.</p></div>
-          <div class="tools-grid">
-            <div class="panel focus-panel"><div class="panel-label">FOCUS TIMER</div><div class="focus-subtitle">One thing at a time.</div><div class="timer-ring"><span id="timerValue">25:00</span><small>STAY FOCUSED</small></div><div class="timer-modes"><button type="button" data-minutes="25" class="selected">25 MIN</button><button type="button" data-minutes="15">15 MIN</button><button type="button" data-minutes="5">5 MIN</button></div><div class="timer-actions"><button type="button" class="btn btn-primary" id="timerToggle">Start focus</button><button type="button" class="btn btn-secondary" id="timerReset">Reset</button></div></div>
-            <div class="panel notes-panel"><div class="panel-label">QUICK NOTES</div><div class="notes-head"><h3>Capture a thought.</h3><span class="note-status" id="noteStatus">SAVED LOCALLY</span></div><textarea id="notes" aria-label="Personal notes" placeholder="Write your ideas, to-do list or reminders here..."></textarea><p>No account, cloud sync, or sharing. Just your notes on this device.</p></div>
-          </div>
-        </section>
-
-        <section class="view" data-page="settings" aria-labelledby="settingsTitle">
-          <div class="page-top"><div class="eyebrow muted">MAKE IT YOURS</div><h1 class="page-title" id="settingsTitle">Your <em>settings.</em></h1><p>Fine-tune the experience for your device and preferences.</p></div>
-          <div class="settings-panel panel"><h3>Appearance</h3><div class="settings-row"><div><b>Theme</b><p>Switch between deep night and clean light.</p></div><select id="themeSelect"><option value="dark">Midnight</option><option value="light">Daylight</option></select></div><div class="settings-row"><div><b>Accent color</b><p>Choose your SPECTRA highlight.</p></div><div class="swatches"><button type="button" class="swatch" data-accent="violet" aria-label="Violet theme"></button><button type="button" class="swatch" data-accent="cyan" aria-label="Cyan theme"></button><button type="button" class="swatch" data-accent="rose" aria-label="Rose theme"></button></div></div><div class="settings-row"><div><b>Reduce animations</b><p>Turn off transitions on slower devices.</p></div><label class="switch"><input type="checkbox" id="reduceMotion"><span></span></label></div></div>
-          <div class="settings-panel panel"><h3>Data & privacy</h3><div class="settings-row"><div><b>Clear local workspace</b><p>Erase your bookmarks, notes, browsing history and game best score.</p></div><button type="button" id="clearWorkspace" class="danger-button">Clear saved data</button></div></div>
-          <div class="notice"><b>Compatibility</b><p>SPECTRA uses regular HTML, CSS, and JavaScript and does not attempt to bypass network filters or browser management settings. Features requiring external websites depend on your network's access rules.</p></div>
-        </section>
-      </main>
-      <footer class="main-footer"><span>SPECTRA © 2026</span><span>CRAFTED FOR CURIOSITY <b>✦</b></span><span>NO TRACKING · LOCAL-FIRST</span></footer>
-    </div>
-  </div>
-  <dialog id="bookmarkDialog" class="modal"><form id="bookmarkForm" method="dialog"><h2>Add a bookmark</h2><p>Save a real HTTPS website to your library.</p><label>WEBSITE NAME<input id="bookmarkName" required maxlength="50" placeholder="Example Domain"></label><label>HTTPS URL<input id="bookmarkUrl" required type="url" placeholder="https://example.com"></label><div class="modal-actions"><button class="btn btn-secondary" type="button" id="cancelBookmark">Cancel</button><button class="btn btn-primary" type="submit">Save bookmark</button></div><small id="bookmarkError"></small></form></dialog>
-  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+<div class="app">
+<header class="top">
+  <div class="brand"><span class="mark">S</span>SPECTRA</div>
+  <div class="tabs" id="tabs" role="tablist" aria-label="Browser tabs"></div>
+  <button class="new" type="button" id="newTab" aria-label="New tab" title="New tab">+</button>
+</header>
+<nav class="toolbar" aria-label="Browser controls">
+  <button type="button" class="tool" id="back" title="Back" aria-label="Back">←</button>
+  <button type="button" class="tool" id="forward" title="Forward" aria-label="Forward">→</button>
+  <button type="button" class="tool" id="reload" title="Refresh" aria-label="Refresh">↻</button>
+  <button type="button" class="tool" id="home" title="Home" aria-label="Home">⌂</button>
+  <form id="navform" class="form" autocomplete="off"><span>●</span><input id="address" aria-label="Website address or search" placeholder="Search or enter website address" spellcheck="false" autocapitalize="off"><button type="submit" class="go">GO ↗</button></form>
+  <button type="button" id="direct" class="open" title="Open page directly in a new browser tab">OPEN DIRECTLY ↗</button>
+</nav>
+<main class="stage" id="stage" aria-label="Browser content"></main>
+</div>
+<div id="message" role="status"></div>
+<noscript><p>Browser JavaScript is blocked or disabled. Tabs and address controls require JavaScript.</p></noscript>
+<script>
+(function(){
+'use strict';
+const $=id=>document.getElementById(id);
+let all=[],selected=0,serial=0,toastTimer;
+const tablist=$('tabs'),stage=$('stage'),address=$('address');
+function active(){return all.find(t=>t.id===selected)}
+function showMessage(msg){const box=$('message');box.textContent=msg;box.style.display='block';clearTimeout(toastTimer);toastTimer=setTimeout(()=>box.style.display='none',3500)}
+function parse(value){
+  const text=value.trim();
+  if(!text)return '';
+  if(/^about:blank$/i.test(text))return '';
+  if(/^(https?:\/\/|www\.)/i.test(text)||/^[^\s]+\.[a-z]{2,}(?:[/?#:]|$)/i.test(text)){
+    try{const url=new URL(/^https?:\/\//i.test(text)?text:'https://'+text);if(['https:','http:'].includes(url.protocol)&&!url.username&&!url.password)return url.href}catch{}
+    return null;
+  }
+  return {search:'https://www.google.com/search?q='+encodeURIComponent(text)};
+}
+function titleFor(url){if(!url)return 'New Tab';try{return new URL(url).hostname.replace(/^www\./,'')}catch{return 'Website'}}
+function external(url){if(!url)return;const link=document.createElement('a');link.href=url;link.target='_blank';link.rel='noopener noreferrer';document.body.appendChild(link);link.click();link.remove()}
+function makeStart(tab){
+  const screen=document.createElement('div');screen.className='start';
+  screen.innerHTML='<div class="homeinner"><div class="bigbrand"><span class="mark">S</span><strong>SPECTRA</strong></div><p class="tagline">A SPACE TO EXPLORE</p><form class="searchform"><input type="text" aria-label="Web search or URL" placeholder="Search or enter website address" autocomplete="off"><button type="submit">Search ↗</button></form><p class="caption">Websites that allow embedding can appear inside SPECTRA.<br>Other sites open directly in your normal browser.</p><div class="help"><span><kbd>Ctrl/⌘ + L</kbd> Address</span><span><kbd>Ctrl/⌘ + T</kbd> New tab</span></div></div>';
+  screen.querySelector('form').addEventListener('submit',e=>{e.preventDefault();navigate(tab,screen.querySelector('input').value)});
+  tab.start=screen;stage.appendChild(screen);
+}
+function makePanel(tab){
+  const panel=document.createElement('div');panel.className='pane';
+  const info=document.createElement('div');info.className='notice';
+  const label=document.createElement('span');label.innerHTML='<b>Preview mode.</b> If a site refuses to display here, use Open directly. This page cannot override that website’s browser restrictions.';
+  const launch=document.createElement('button');launch.type='button';launch.textContent='Open directly ↗';launch.addEventListener('click',()=>external(tab.url));
+  info.append(label,launch);
+  const frame=document.createElement('iframe');frame.title='Website preview';frame.referrerPolicy='no-referrer';
+  panel.append(info,frame);tab.panel=panel;tab.frame=frame;stage.appendChild(panel);
+}
+function sync(){
+  const t=active();if(!t)return;
+  address.value=t.url;$('back').disabled=t.index===0;$('forward').disabled=t.index===t.history.length-1;$('direct').disabled=!t.url;
+  document.title=(t.name||'New Tab')+' — SPECTRA Browser';
+}
+function drawTabs(){
+  tablist.replaceChildren();
+  all.forEach(t=>{
+    const element=document.createElement('div');element.className='tab'+(selected===t.id?' active':'');element.role='tab';element.tabIndex=0;element.setAttribute('aria-selected',selected===t.id?'true':'false');
+    const symbol=document.createElement('span');symbol.className='symbol';symbol.textContent=t.url?'◈':'✦';
+    const name=document.createElement('span');name.className='title';name.textContent=t.name;
+    const close=document.createElement('button');close.type='button';close.className='close';close.setAttribute('aria-label','Close tab');close.textContent='×';
+    close.addEventListener('click',e=>{e.stopPropagation();removeTab(t.id)});
+    element.append(symbol,name,close);element.addEventListener('click',()=>activate(t.id));element.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();activate(t.id)}});
+    tablist.appendChild(element);
+  });
+}
+function activate(id){
+  if(!all.some(t=>t.id===id))return;
+  selected=id;all.forEach(t=>{t.start.classList.toggle('active',t.id===id&&!t.url);t.panel.classList.toggle('active',t.id===id&&!!t.url)});
+  drawTabs();sync();
+}
+function createTab(){
+  const t={id:++serial,url:'',name:'New Tab',history:[''],index:0,start:null,panel:null,frame:null};
+  all.push(t);makeStart(t);makePanel(t);activate(t.id);return t;
+}
+function removeTab(id){
+  const idx=all.findIndex(t=>t.id===id);if(idx<0)return;
+  all[idx].start.remove();all[idx].panel.remove();all.splice(idx,1);
+  if(!all.length)createTab();else if(selected===id)activate(all[Math.max(0,idx-1)].id);else drawTabs();
+}
+function display(t,url){
+  t.url=url;t.name=titleFor(url);
+  if(url)t.frame.src=url;
+  else t.frame.removeAttribute('src');
+  if(selected===t.id)activate(t.id);else drawTabs();
+}
+function navigate(t,raw){
+  if(!t)return;
+  const to=parse(raw);
+  if(to===null){showMessage('Enter a valid website address.');return}
+  if(typeof to==='object'){external(to.search);return}
+  t.history=t.history.slice(0,t.index+1);t.history.push(to);t.index=t.history.length-1;display(t,to);
+}
+function historyMove(by){const t=active();if(!t)return;const next=t.index+by;if(next<0||next>=t.history.length)return;t.index=next;display(t,t.history[next])}
+$('newTab').addEventListener('click',()=>{createTab();address.focus()});
+$('back').addEventListener('click',()=>historyMove(-1));
+$('forward').addEventListener('click',()=>historyMove(1));
+$('reload').addEventListener('click',()=>{const t=active();if(t&&t.url)t.frame.src=t.url});
+$('home').addEventListener('click',()=>navigate(active(),''));
+$('direct').addEventListener('click',()=>{const t=active();if(t)external(t.url)});
+$('navform').addEventListener('submit',e=>{e.preventDefault();navigate(active(),address.value)});
+window.addEventListener('keydown',e=>{
+ const mod=e.ctrlKey||e.metaKey;
+ if(mod&&e.key.toLowerCase()==='l'){e.preventDefault();address.focus();address.select()}
+ else if(mod&&e.key.toLowerCase()==='t'){e.preventDefault();createTab();address.focus()}
+ else if(mod&&e.key.toLowerCase()==='w'){e.preventDefault();removeTab(selected)}
+ else if(e.altKey&&e.key==='ArrowLeft'){e.preventDefault();historyMove(-1)}
+ else if(e.altKey&&e.key==='ArrowRight'){e.preventDefault();historyMove(1)}
+});
+createTab();
+})();
+</script>
 </body>
 </html>
